@@ -44,14 +44,9 @@ void setup()
   Serial.println(WiFi.localIP());
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
     AsyncResponseStream *response = request->beginResponseStream("text/html");
-    response->print("UV Value: ");
-    response->printf((char*) uvValue);
-    response->print("Temperature: ");
-    response->print((char*) (int) temperature);
-    response->println(" C");
-    response->print("Humidity: ");
-    response->print((char*) (int) humidity);
-    response->println("% RH");
+    response->printf("UV Value: %d", uvValue);
+    response->printf("Temperature: %d C", (int) temperature);
+    response->printf("Humidity: %d% RH", (int) humidity);
     request->send(response);
   });
   server.onNotFound(notFound);
@@ -72,15 +67,13 @@ void loop()
   if ((err = dht22.read(&temperature, &humidity, NULL)) != SimpleDHTErrSuccess) {
     Serial.print("Read DHT22 failed, err=");
     Serial.println(err);
-    delay(2000);
-    return;
+  } else {
+    Serial.print("Temperature: ");
+    Serial.print((int) temperature); Serial.println(" C");
+
+    Serial.print("Humidity: ");
+    Serial.print((int) humidity); Serial.println("% RH");
   }
-
-  Serial.print("Temperature: ");
-  Serial.print((int) temperature); Serial.println(" C");
-
-  Serial.print("Humidity: ");
-  Serial.print((int) humidity); Serial.println("% RH");
 
   delay(2500);
 }
