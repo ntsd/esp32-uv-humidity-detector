@@ -18,6 +18,7 @@ int uvIndex = 0;
 
 // Pins
 int uvDetectorPin = A0;
+int uvSensorVoltageInput = 3.3;
 int dht22Pin = 2;
 SimpleDHT22 dht22(dht22Pin);
 
@@ -71,8 +72,8 @@ void loop() {
 
   // UV Detector
   int sensorValue = analogRead(uvDetectorPin);
-  uvVoltage = (sensorValue * (5.0 / 1023.0)) * 1000; //Voltage in miliVolts
-  
+  uvVoltage = sensorValue / 1024 * uvSensorVoltageInput;
+
   switch (uvVoltage) {
     case 0 ... 227:uvIndex = 1;break;
     case 228 ... 318:uvIndex = 2;break;
