@@ -11,15 +11,16 @@
 #include <ESPAsyncWebServer.h>
 
 // Variables
+uint16_t SLEEP_TIME = 30 * 1000;
+uint16_t uvVoltage;
+uint8_t uvIndex = 0;
 byte temperature = 0;
 byte humidity = 0;
-int uvVoltage;
-int uvIndex = 0;
 
 // Pins
-int uvDetectorPin = A0;
-int uvSensorVoltageInput = 3.3;
-int dht22Pin = 2;
+uint8_t uvDetectorPin = A0;
+uint8_t uvSensorVoltageInput = 3.3;
+uint8_t dht22Pin = 2;
 SimpleDHT22 dht22(dht22Pin);
 
 // Wifi
@@ -46,10 +47,10 @@ void setup() {
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
     // Time
     unsigned long allSeconds = millis() / 1000;
-    int runHours = allSeconds / 3600;
-    int secsRemaining =allSeconds % 3600;
-    int runMinutes = secsRemaining / 60;
-    int runSeconds = secsRemaining % 60;
+    uint8_t runHours = allSeconds / 3600;
+    uint8_t secsRemaining = allSeconds % 3600;
+    uint8_t runMinutes = secsRemaining / 60;
+    uint8_t runSeconds = secsRemaining % 60;
     char time[13];
     sprintf(time, "%02d:%02d:%02d", runHours, runMinutes, runSeconds);
 
@@ -57,8 +58,8 @@ void setup() {
     response->printf("<br><label>Runtime: %s</label><br>", time);
     response->printf("<br><label>UV Index: %d</label><br>", uvIndex);
     response->printf("<br><label> UV voltage: %d</label><br>", uvVoltage);
-    response->printf("<br><label>Temperature: %d C</label><br>", (int) temperature);
-    response->printf("<br><label>Humidity: %d%% RH</label><br>", (int) humidity);
+    response->printf("<br><label>Temperature: %d C</label><br>", (uint8_t) temperature);
+    response->printf("<br><label>Humidity: %d%% RH</label><br>", (uint8_t) humidity);
     request->send(response);
   });
 
@@ -71,11 +72,12 @@ void loop() {
   Serial.println("=================================");
 
   // UV Detector
-  int sensorValue = analogRead(uvDetectorPin);
-  uvVoltage = sensorValue / 1024 * uvSensorVoltageInput;
+  uint16_t sensorValue = analogRead(uvDetectorPin);
+  uvVoltage = (sensorValue * (uvSensorVoltageInput / 1023.0)) * 1000;
 
   switch (uvVoltage) {
-    case 0 ... 227:uvIndex = 1;break;
+    case 0 ... 50:uvIndex = 0;break;
+    case 51 ... 227:uvIndex = 1;break;
     case 228 ... 318:uvIndex = 2;break;
     case 319 ... 408:uvIndex = 3;break;
     case 409 ... 503:uvIndex = 4;break;
@@ -103,5 +105,5 @@ void loop() {
     Serial.print((int) humidity); Serial.println("% RH");
   }
 
-  delay(3000);
+  delay(SLEEP_TIME);
 }
