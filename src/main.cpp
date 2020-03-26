@@ -54,7 +54,8 @@ void setup() {
 
     AsyncResponseStream *response = request->beginResponseStream("text/html");
     response->printf("<br><label>Runtime: %s</label><br>", time);
-    response->printf("<br><label>UV Index: %d UV voltage: %d</label><br>", uvIndex, uvVoltage);
+    response->printf("<br><label>UV Index: %d</label><br>", uvIndex);
+    response->printf("<br><label> UV voltage: %d</label><br>", uvVoltage);
     response->printf("<br><label>Temperature: %d C</label><br>", (int) temperature);
     response->printf("<br><label>Humidity: %d%% RH</label><br>", (int) humidity);
     request->send(response);
@@ -69,7 +70,8 @@ void loop() {
   Serial.println("=================================");
 
   // UV Detector
-  uvVoltage = analogRead(uvDetectorPin);
+  int sensorValue = analogRead(uvDetectorPin);
+  uvVoltage = (sensorValue * (5.0 / 1023.0)) * 1000; //Voltage in miliVolts
   
   switch (uvVoltage) {
     case 0 ... 227:uvIndex = 1;break;
