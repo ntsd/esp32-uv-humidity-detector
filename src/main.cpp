@@ -44,9 +44,10 @@ void setup()
   Serial.println(WiFi.localIP());
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
     AsyncResponseStream *response = request->beginResponseStream("text/html");
-    response->printf("<label>UV Index: %d</label><br>", uvIndex);
-    response->printf("<label>Temperature: %d C</label><br>", (int) temperature);
-    response->printf("<label>Humidity: %d%% RH</label><br>", (int) humidity);
+    response->printf("<br><label>Time: %d</label><br>", (int) millis());
+    response->printf("<br><label>UV Index: %d</label><br>", uvIndex);
+    response->printf("<br><label>Temperature: %d C</label><br>", (int) temperature);
+    response->printf("<br><label>Humidity: %d%% RH</label><br>", (int) humidity);
     request->send(response);
   });
   server.onNotFound(notFound);
