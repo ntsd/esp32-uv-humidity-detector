@@ -13,6 +13,7 @@
 // Variables
 byte temperature = 0;
 byte humidity = 0;
+int uvVoltage;
 int uvIndex = 0;
 
 // Pins
@@ -53,7 +54,7 @@ void setup() {
 
     AsyncResponseStream *response = request->beginResponseStream("text/html");
     response->printf("<br><label>Runtime: %s</label><br>", time);
-    response->printf("<br><label>UV Index: %d</label><br>", uvIndex);
+    response->printf("<br><label>UV Index: %d UV voltage: %d</label><br>", uvIndex, uvVoltage);
     response->printf("<br><label>Temperature: %d C</label><br>", (int) temperature);
     response->printf("<br><label>Humidity: %d%% RH</label><br>", (int) humidity);
     request->send(response);
@@ -68,12 +69,11 @@ void loop() {
   Serial.println("=================================");
 
   // UV Detector
-  int sensorValue = analogRead(uvDetectorPin);
-  int voltage = (sensorValue * (5.0 / 1023.0)) * 1000; // Voltage in miliVolts
+  uvVoltage = analogRead(uvDetectorPin);
   
-  switch (voltage) {
+  switch (uvVoltage) {
     case 0 ... 227:uvIndex = 1;break;
-    case 278 ... 318:uvIndex = 2;break;
+    case 228 ... 318:uvIndex = 2;break;
     case 319 ... 408:uvIndex = 3;break;
     case 409 ... 503:uvIndex = 4;break;
     case 504 ... 606:uvIndex = 5;break;
