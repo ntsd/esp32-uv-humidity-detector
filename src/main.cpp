@@ -43,8 +43,17 @@ void setup()
   Serial.print("IP Address: ");
   Serial.println(WiFi.localIP());
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+    // Time
+    unsigned long allSeconds = millis() / 1000;
+    int runHours = allSeconds / 3600;
+    int secsRemaining =allSeconds % 3600;
+    int runMinutes = secsRemaining / 60;
+    int runSeconds = secsRemaining % 60;
+    char time[13];
+    sprintf(time, "%02d:%02d:%02d", runHours, runMinutes, runSeconds);
+
     AsyncResponseStream *response = request->beginResponseStream("text/html");
-    response->printf("<br><label>Time: %d</label><br>", (int) millis());
+    response->printf("<br><label>Runtime: %s</label><br>", time);
     response->printf("<br><label>UV Index: %d</label><br>", uvIndex);
     response->printf("<br><label>Temperature: %d C</label><br>", (int) temperature);
     response->printf("<br><label>Humidity: %d%% RH</label><br>", (int) humidity);
@@ -66,7 +75,7 @@ void loop()
     uvIndex = 0;
   } else if (voltage > 227 && voltage <= 318) {
     uvIndex = 1;
-  } else if (voltage >318 && voltage <= 408) {
+  } else if (voltage > 318 && voltage <= 408) {
     uvIndex = 2;
   } else if (voltage > 408 && voltage <= 503) {
     uvIndex = 3;
