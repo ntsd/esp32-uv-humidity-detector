@@ -24,13 +24,11 @@ SimpleDHT22 dht22(dht22Pin);
 AsyncWebServer server(80);
 const char* ssid = "ZONG MBB-E8372-95F5";
 const char* password = "41473716";
-
 void notFound(AsyncWebServerRequest *request) {
-    request->send(404, "text/plain", "Not found");
+  request->send(404, "text/plain", "Not found");
 }
 
-void setup() 
-{
+void setup() {
   Serial.begin(115200);
 
   // Wifi setup
@@ -42,7 +40,8 @@ void setup()
   }
   Serial.print("IP Address: ");
   Serial.println(WiFi.localIP());
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
     // Time
     unsigned long allSeconds = millis() / 1000;
     int runHours = allSeconds / 3600;
@@ -59,42 +58,31 @@ void setup()
     response->printf("<br><label>Humidity: %d%% RH</label><br>", (int) humidity);
     request->send(response);
   });
+
   server.onNotFound(notFound);
+
   server.begin();
 }
 
-void loop() 
-{
+void loop() {
   Serial.println("=================================");
 
   // UV Detector
   int sensorValue = analogRead(uvDetectorPin);
   int voltage = (sensorValue * (5.0 / 1023.0)) * 1000; // Voltage in miliVolts
   
-  if (voltage > 0 && voltage <= 227) {
-    uvIndex = 0;
-  } else if (voltage > 227 && voltage <= 318) {
-    uvIndex = 1;
-  } else if (voltage > 318 && voltage <= 408) {
-    uvIndex = 2;
-  } else if (voltage > 408 && voltage <= 503) {
-    uvIndex = 3;
-  } else if (voltage > 503 && voltage <= 606) {
-    uvIndex = 4;
-  } else if (voltage > 606 && voltage <= 696) {
-    uvIndex = 5;
-  } else if (voltage > 696 && voltage <= 795) {
-    uvIndex = 6;
-  } else if (voltage > 795 && voltage <= 881) {
-    uvIndex = 7;
-  } else if (voltage > 881 && voltage <= 976) {
-    uvIndex = 8;
-  } else if (voltage > 976 && voltage <= 1079) {
-    uvIndex = 9;
-  } else if (voltage > 1079 && voltage <= 1170) {
-    uvIndex = 10;
-  } else if (voltage > 1170) {
-    uvIndex = 11;
+  switch (voltage) {
+    case 0 ... 227:uvIndex = 1;break;
+    case 278 ... 318:uvIndex = 2;break;
+    case 319 ... 408:uvIndex = 3;break;
+    case 409 ... 503:uvIndex = 4;break;
+    case 504 ... 606:uvIndex = 5;break;
+    case 607 ... 696:uvIndex = 6;break;
+    case 697 ... 795:uvIndex = 7;break;
+    case 796 ... 881:uvIndex = 8;break;
+    case 882 ... 976:uvIndex = 9;break;
+    case 977 ... 1170:uvIndex = 10;break;
+    default:uvIndex = 11;break; 
   }
   Serial.print("UV Index: ");
   Serial.println(uvIndex);
@@ -112,5 +100,5 @@ void loop()
     Serial.print((int) humidity); Serial.println("% RH");
   }
 
-  delay(2500);
+  delay(3000);
 }
