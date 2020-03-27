@@ -1,5 +1,6 @@
-#include "Arduino.h"
-#include "SimpleDHT.h"
+#include <stdio.h>
+#include <Arduino.h>
+#include <SimpleDHT.h>
 
 #ifdef ESP32
 #include <WiFi.h>
@@ -11,9 +12,11 @@
 #include <ESPAsyncWebServer.h>
 
 // Variables
-uint16_t SLEEP_TIME = 30 * 1000;
+uint16_t SLEEP_TIME = 3 * 1000;
 uint16_t uvVoltage;
+uint16_t highUvVoltage = 0;
 uint8_t uvIndex = 0;
+uint8_t highUvIndex = 0;
 byte temperature = 0;
 byte humidity = 0;
 
@@ -56,8 +59,8 @@ void setup() {
 
     AsyncResponseStream *response = request->beginResponseStream("text/html");
     response->printf("<br><label>Runtime: %s</label><br>", time);
-    response->printf("<br><label>UV Index: %d</label><br>", uvIndex);
-    response->printf("<br><label> UV voltage: %d</label><br>", uvVoltage);
+    response->printf("<br><label>UV Index: %d high: %d</label><br>", uvIndex, highUvIndex);
+    response->printf("<br><label>UV voltage: %d high: %d</label><br>", uvVoltage, highUvVoltage);
     response->printf("<br><label>Temperature: %d C</label><br>", (uint8_t) temperature);
     response->printf("<br><label>Humidity: %d%% RH</label><br>", (uint8_t) humidity);
     request->send(response);
@@ -68,29 +71,38 @@ void setup() {
   server.begin();
 }
 
+uint8_t getUvIndex(uint16_t uvVoltage) {
+  switch (uvVoltage) {
+    case 0 ... 50:return 0;
+    case 51 ... 227:return 1;
+    case 228 ... 318:return 2;
+    case 319 ... 408:return 3;
+    case 409 ... 503:return 4;
+    case 504 ... 606:return 5;
+    case 607 ... 696:return 6;
+    case 697 ... 795:return 7;
+    case 796 ... 881:return 8;
+    case 882 ... 976:return 9;
+    case 977 ... 1170:return 10;
+    default:return 11;
+  }
+}
+
 void loop() {
   Serial.println("=================================");
 
   // UV Detector
   uint16_t sensorValue = analogRead(uvDetectorPin);
   uvVoltage = (sensorValue * (uvSensorVoltageInput / 1023.0)) * 1000;
-
-  switch (uvVoltage) {
-    case 0 ... 50:uvIndex = 0;break;
-    case 51 ... 227:uvIndex = 1;break;
-    case 228 ... 318:uvIndex = 2;break;
-    case 319 ... 408:uvIndex = 3;break;
-    case 409 ... 503:uvIndex = 4;break;
-    case 504 ... 606:uvIndex = 5;break;
-    case 607 ... 696:uvIndex = 6;break;
-    case 697 ... 795:uvIndex = 7;break;
-    case 796 ... 881:uvIndex = 8;break;
-    case 882 ... 976:uvIndex = 9;break;
-    case 977 ... 1170:uvIndex = 10;break;
-    default:uvIndex = 11;break; 
-  }
+  uvIndex = getUvIndex(uvVoltage);
+  
   Serial.print("UV Index: ");
   Serial.println(uvIndex);
+
+  if (uvVoltage > highUvVoltage) {
+    highUvVoltage = uvVoltage;
+    highUvIndex = uvIndex;
+  }
 
   // Huminity and Temperature DHT22
   int err = SimpleDHTErrSuccess;
