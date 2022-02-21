@@ -62,8 +62,8 @@ void setup()
 
     AsyncResponseStream *response = request->beginResponseStream("text/html");
     response->printf("<br><label>Runtime: %s</label><br>", time);
-    response->printf("<br><label>UV Index: %d high: %d</label><br>", uvIndex, highUvIndex);
-    response->printf("<br><label>UV voltage: %d high: %d</label><br>", uvVoltage, highUvVoltage);
+    response->printf("<br><label>UV Index: %d highest: %d</label><br>", uvIndex, highUvIndex);
+    response->printf("<br><label>UV voltage: %d highest: %d</label><br>", uvVoltage, highUvVoltage);
     response->printf("<br><label>Temperature: %d C</label><br>", (uint8_t) temperature);
     response->printf("<br><label>Humidity: %d%% RH</label><br>", (uint8_t) humidity); // 
     response->printf("<br><label>DHT22 Error: %d</label><br>", dhtErr);
