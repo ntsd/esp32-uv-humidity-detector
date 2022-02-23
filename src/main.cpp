@@ -3,11 +3,15 @@
 #include <SimpleDHT.h>
 
 #ifdef ESP32
+#include <WiFi.h>
+#include <AsyncTCP.h>
 #elif defined(ESP8266)
 #include <ESP8266WiFi.h>
 #include <ESPAsyncTCP.h>
 #endif
 #include <ESPAsyncWebServer.h>
+
+#include <TM1637Display.h>
 
 // Variables
 uint16_t SLEEP_TIME = 3 * 1000;
@@ -24,11 +28,17 @@ uint8_t uvDetectorPin = A0;
 uint8_t uvSensorVoltageInput = 3.3;
 uint8_t dht22Pin = 2;
 SimpleDHT22 dht22(dht22Pin);
+uint8_t TM1637_CLK = 2;
+uint8_t TM1637_DIO = 3;
+
+// TM1637 Display
+TM1637Display display = TM1637Display(TM1637_CLK, TM1637_DIO);
+bool displayShowingUvIndex = false;
 
 // Wifi
 AsyncWebServer server(80);
-const char *ssid = "your_wifi_ssid";
-const char *password = "your_wifi_password";
+const char *ssid = "Jirawat_2.4GHz";
+const char *password = "0845916998";
 void notFound(AsyncWebServerRequest *request)
 {
   request->send(404, "text/plain", "Not found");
@@ -37,6 +47,11 @@ void notFound(AsyncWebServerRequest *request)
 void setup()
 {
   Serial.begin(115200);
+
+  // setup the display
+  display.clear();
+  // Set the brightness:
+  display.setBrightness(7);
 
   // Wifi setup
   WiFi.mode(WIFI_STA);
@@ -134,6 +149,28 @@ void loop()
     Serial.printf("Temperature: %d C\n", (uint8_t)temperature);
 
     Serial.printf("Humidity: %d%% RH\n", (uint8_t)humidity);
+  }
+
+  // update display
+  display.clear();
+  if (displayShowingUvIndex)
+  {
+    // show UV index
+    display.showNumberDec(uvVoltage, true, 4, 0);
+
+    displayShowingUvIndex = false;
+
+    Serial.println("1111");
+  }
+  else
+  {
+    // show temperature and humidity
+    display.showNumberDec((uint8_t)temperature, true, 2, 0);
+    display.showNumberDec((uint8_t)humidity, true, 2, 2);
+
+    displayShowingUvIndex = true;
+
+    Serial.println("2222");
   }
 
   delay(SLEEP_TIME);
