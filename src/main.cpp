@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <Arduino.h>
-#include <SimpleDHT.h>
 
+#include <ESPAsyncWebServer.h>
 #ifdef ESP32
 #include <WiFi.h>
 #include <AsyncTCP.h>
@@ -9,8 +9,8 @@
 #include <ESP8266WiFi.h>
 #include <ESPAsyncTCP.h>
 #endif
-#include <ESPAsyncWebServer.h>
 
+#include <SimpleDHT.h>
 #include <TM1637Display.h>
 
 // Variables
@@ -24,12 +24,12 @@ byte humidity = 0;
 int dhtErr = SimpleDHTErrSuccess;
 
 // Pins
-uint8_t uvDetectorPin = A0;
+uint8_t uvDetectorPin = 34;
 uint8_t uvSensorVoltageInput = 3.3;
-uint8_t dht22Pin = 2;
+uint8_t dht22Pin = 23;
 SimpleDHT22 dht22(dht22Pin);
 uint8_t TM1637_CLK = 2;
-uint8_t TM1637_DIO = 3;
+uint8_t TM1637_DIO = 4;
 
 // TM1637 Display
 TM1637Display display = TM1637Display(TM1637_CLK, TM1637_DIO);
@@ -159,8 +159,6 @@ void loop()
     display.showNumberDec(uvVoltage, true, 4, 0);
 
     displayShowingUvIndex = false;
-
-    Serial.println("1111");
   }
   else
   {
@@ -169,8 +167,6 @@ void loop()
     display.showNumberDec((uint8_t)humidity, true, 2, 2);
 
     displayShowingUvIndex = true;
-
-    Serial.println("2222");
   }
 
   delay(SLEEP_TIME);
