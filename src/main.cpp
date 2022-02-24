@@ -5,6 +5,7 @@
 #ifdef ESP32
 #include <WiFi.h>
 #include <AsyncTCP.h>
+#include <driver/adc.h>
 #elif defined(ESP8266)
 #include <ESP8266WiFi.h>
 #include <ESPAsyncTCP.h>
@@ -24,7 +25,7 @@ byte humidity = 0;
 int dhtErr = SimpleDHTErrSuccess;
 
 // Pins
-uint8_t uvDetectorPin = 34;
+uint8_t uvDetectorPin = 36;
 uint8_t uvSensorVoltageInput = 3.3;
 uint8_t dht22Pin = 23;
 SimpleDHT22 dht22(dht22Pin);
@@ -38,7 +39,7 @@ bool displayShowingUvIndex = false;
 // Wifi
 AsyncWebServer server(80);
 const char *ssid = "Jirawat_2.4GHz";
-const char *password = "0845916998";
+const char *password = "";
 void notFound(AsyncWebServerRequest *request)
 {
   request->send(404, "text/plain", "Not found");
@@ -48,9 +49,17 @@ void setup()
 {
   Serial.begin(115200);
 
+// setup esp32 analog
+#ifdef ESP32
+  // Set all read bits: 12 = 0-4095, 11 = 0-2047, 10 = 0-1023
+  // ADC_11db = 0-3.3V, 6db = 0-2.2V, 0db = 0-1V
+  uvDetectorPin = ADC1_CHANNEL_0;
+  adc1_config_width(ADC_WIDTH_BIT_12);
+  adc1_config_channel_atten(uvDetectorPin, ADC_ATTEN_DB_0); // ADC_ATTEN_DB_11 = 0-3,6V
+#endif
+
   // setup the display
   display.clear();
-  // Set the brightness:
   display.setBrightness(7);
 
   // Wifi setup
@@ -125,7 +134,12 @@ void loop()
   Serial.println("=================================");
 
   // UV Detector
+#ifdef ESP32
+  uint16_t sensorValue = adc1_get_raw(uvDetectorPin);
+#elif defined(ESP8266)
   uint16_t sensorValue = analogRead(uvDetectorPin);
+#endif
+  Serial.printf("sensorValue: %d\n", sensorValue);
   uvVoltage = (sensorValue * (uvSensorVoltageInput / 1023.0)) * 1000;
   Serial.printf("UV Voltage: %d\n", uvVoltage);
 
